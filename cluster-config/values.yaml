@@ -13,3 +13,4 @@ namespaces:
 
 gitops:
   namespace: gitops
+  cluster: argocd
