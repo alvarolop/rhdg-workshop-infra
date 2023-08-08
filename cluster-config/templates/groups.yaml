@@ -1,4 +1,5 @@
-{{- range $user := untilStep 1 (int .Values.users) 1 }}
+{{- $count := .Values.users | add1 }}
+{{- range $user := untilStep 1 (int $count) 1 }}
 ---
 apiVersion: user.openshift.io/v1
 kind: Group
