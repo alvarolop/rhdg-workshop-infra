@@ -2,7 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-users: 2
+# Due to a bug, the following variable creates one user less.
+users: 4
 
 ocp_users: 20
 
