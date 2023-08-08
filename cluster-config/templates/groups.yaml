@@ -1,0 +1,9 @@
+{{- range $user := untilStep 1 (int .Values.users) 1 }}
+---
+apiVersion: user.openshift.io/v1
+kind: Group
+metadata:
+  name: user{{ $user }}
+users:
+  - user{{ $user }}
+{{- end }}

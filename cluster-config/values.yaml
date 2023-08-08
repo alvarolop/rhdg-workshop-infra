@@ -1,0 +1,15 @@
+# Default values for cluster-config.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+users: 2
+
+ocp_users: 20
+
+namespaces: 
+  - rhdg-operator
+  - rhdg1
+  - rhdg2
+
+gitops:
+  namespace: gitops

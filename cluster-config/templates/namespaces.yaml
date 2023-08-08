@@ -1,0 +1,42 @@
+{{- range $user := untilStep 1 (int .Values.users) 1 }}
+{{- range $namespace := $.Values.namespaces }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: user{{ $user }}-{{ $namespace }}
+  labels:
+    argocd.argoproj.io/managed-by: {{ $.Values.gitops.namespace }}
+---
+#Add user to namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: user{{ $user }}-admin
+  namespace: user{{ $user }}-{{ $namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: Group
+    name: {{ $user }}
+    apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: user{{ $user }}-resource-quota
+  namespace: user{{ $user }}-{{ $namespace }}
+spec:
+  hard:
+    pods: "10" 
+    requests.cpu: "10" 
+    requests.memory: 20Gi 
+    limits.cpu: "10" 
+    limits.memory: "20Gi" 
+  scopes:
+  # Only for long running pods, not builds
+  - NotTerminating
+{{- end }}
+{{- end }}
