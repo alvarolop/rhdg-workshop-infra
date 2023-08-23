@@ -8,8 +8,8 @@ ocp_users: 20
 
 namespaces: 
   - rhdg-operator
-  - rhdg1
-  - rhdg2
+  - rhdg
+  - rhdg-2
 
 gitops:
   namespace: gitops
