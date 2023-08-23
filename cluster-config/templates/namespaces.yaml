@@ -32,10 +32,10 @@ metadata:
 spec:
   hard:
     pods: "10" 
-    requests.cpu: "10" 
-    requests.memory: 20Gi 
-    limits.cpu: "10" 
-    limits.memory: "20Gi" 
+    # requests.cpu: "10" 
+    # requests.memory: 20Gi 
+    # limits.cpu: "10" 
+    # limits.memory: "20Gi" 
   scopes:
   # Only for long running pods, not builds
   - NotTerminating
