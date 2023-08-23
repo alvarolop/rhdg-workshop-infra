@@ -14,3 +14,7 @@ namespaces:
 gitops:
   namespace: gitops
   cluster: argocd
+
+rhdg:
+  operator:
+    namespace: rhdg-operator
