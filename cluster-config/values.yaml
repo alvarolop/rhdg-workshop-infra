@@ -7,7 +7,7 @@ users: 4
 ocp_users: 20
 
 namespaces: 
-  - rhdg-operator
+  # - rhdg-operator
   - rhdg
   - rhdg-2
 
