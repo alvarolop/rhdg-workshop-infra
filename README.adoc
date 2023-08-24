@@ -35,8 +35,45 @@ toc::[]
 
 == Introduction 
 
-This repository contains the automation to deploy the RHDG workshop
+This repository contains the automation to deploy the RHDG workshop.
 
 
 == How to install
 
+Deploying the cluster is pretty simple:
+
+* First, execute the `./auto-install.sh` of this git repository. This will create namespaces for users with correct permissions, users to access the namespaces, and the Subscription to install the RHDG operator.
+* Second, use the `./auto-install.sh` of the https://github.com/alvarolop/quarkus-observability-app[quarkus-observability-app] to install the observability components.
+
+
+
+
+
+
+
+
+== Deprecated: How to create second oauth source
+
+.Create the htpasswd file
+[source, bash]
+---
+touch temporal-workshop-users.htpasswd
+for userId in {1..100}; do htpasswd -b -B temporal-workshop-users.htpasswd user$userId openshift; done
+---
+
+.Create secret with the users and pass
+[source, yaml]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: workshop-htpasswd-secret
+  namespace: openshift-config
+type: Opaque 
+stringData:
+  htpasswd: |
+    {{- range $user := untilStep 1 (int .Values.ocp_users) 1 }}
+    {{- $username := printf "%s%s" "user"  ( $user | toString) }}
+    {{ htpasswd $username "openshift" }}
+    {{- end }}
+---
