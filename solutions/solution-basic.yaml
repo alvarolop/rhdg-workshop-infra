@@ -1,0 +1,187 @@
+---
+apiVersion: infinispan.org/v1
+kind: Infinispan
+metadata:
+  annotations:
+    infinispan.org/podTargetLabels: 'domain,user'
+    infinispan.org/targetLabels: domain
+  name: cluster
+  labels:
+    domain: bookshop
+    user: user1
+spec:
+  configMapName: cluster-custom-config
+  container:
+    cpu: "2000m:100m"
+    extraJvmOpts: '-Duser.timezone="Europe/Madrid"'
+    memory: "1Gi:1Gi"
+  expose:
+    annotations: {}
+    type: Route
+  replicas: 2
+  security:
+    endpointAuthentication: true
+    endpointSecretName: cluster-credentials
+    authorization:
+      enabled: true
+    endpointEncryption:
+      type: Service
+  service:
+    container:
+      ephemeralStorage: true 
+    type: DataGrid 
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-credentials
+type: Opaque
+stringData:
+  identities.yaml: |-
+    credentials:
+    - username: developer
+      password: developer
+    - username: admin
+      password: password
+      roles:
+        - admin
+    - username: user1
+      password: openshift
+      roles:
+        - application
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-custom-config
+data:
+  infinispan-config.yaml: >
+    infinispan:
+      cache-container:
+        name: "default"
+        statistics: "true"
+        replicatedCacheConfiguration:
+          name: "proto-repl-small-template"
+          mode: "SYNC"
+          statistics: "true"
+          encoding:
+            key:
+              mediaType: application/x-protostream
+            value:
+              mediaType: application/x-protostream
+          expiration:
+            lifespan: "5000"
+            maxIdle: "1000"
+          memory:
+            maxCount: "10"
+            whenFull: "REMOVE"
+        replicatedCacheConfiguration:
+          name: "proto-repl-big-template"
+          mode: "SYNC"
+          statistics: "true"
+          encoding:
+            key:
+              mediaType: application/x-protostream
+            value:
+              mediaType: application/x-protostream
+          expiration:
+            lifespan: "5000"
+            maxIdle: "1000"
+          memory:
+            maxCount: "1000"
+            whenFull: "REMOVE"
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: cluster-cache-replicated-01
+spec:
+  clusterName: cluster
+  name:  cache-replicated-01
+  template: |-
+    replicatedCache:
+      mode: "SYNC"
+      statistics: "true"
+      encoding:
+        key:
+          mediaType: application/x-protostream
+        value:
+          mediaType: application/x-protostream
+      expiration:
+        lifespan: "60000"
+      memory:
+        maxSize: "200MB"
+        whenFull: "REMOVE"
+  updates:
+    strategy: recreate
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: cluster-cache-replicated-02
+spec:
+  clusterName: cluster
+  name:  cache-replicated-02
+  templateName: proto-repl-small-template
+  updates:
+    strategy: recreate
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: cluster-rest-proto
+spec:
+  clusterName: cluster
+  name:  rest-proto
+  template: |-
+    distributedCache:
+      mode: "SYNC"
+      owners: 2
+      statistics: "true"
+      encoding:
+        key:
+          mediaType: application/x-protostream
+        value:
+          mediaType: application/x-protostream
+  updates:
+    strategy: recreate
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: cluster-rest-plain
+spec:
+  clusterName: cluster
+  name:  rest-plain
+  template: |-
+    distributedCache:
+      mode: "SYNC"
+      owners: 2
+      statistics: "true"
+      encoding:
+        key:
+          mediaType: text/plain
+        value:
+          mediaType: text/plain
+  updates:
+    strategy: recreate
+---
+apiVersion: infinispan.org/v2alpha1
+kind: Cache
+metadata:
+  name: cluster-rest-json
+spec:
+  clusterName: cluster
+  name:  rest-json
+  template: |-
+    distributedCache:
+      mode: "SYNC"
+      owners: 2
+      statistics: "true"
+      encoding:
+        key:
+          mediaType: application/json
+        value:
+          mediaType: application/json
+  updates:
+    strategy: recreate
