@@ -117,7 +117,7 @@ metadata:
   name: {{ $.Values.openldap.name }}-config
   namespace: {{ $.Values.openldap.namespace }}
 data:
-  ldif00.ldif: |
+  00-organization.ldif: |
     dn: dc=acme,dc=org
     objectClass: top
     objectClass: domain
@@ -138,7 +138,7 @@ data:
     dn: ou=roles,dc=acme,dc=org
     objectClass: organizationalUnit
     description: Roles in Acme's organization to group clients  
-  ldif10.ldif: |
+  10-users.ldif: |
     dn: uid=user-01,ou=people,dc=acme,dc=org
     objectClass: inetOrgPerson
     objectClass: organizationalPerson
@@ -162,17 +162,17 @@ data:
     mail: user-02@acme.org
     userPassword: user-02
     uid: user-02
-  ldif20.ldif: |
-    dn: cn=developers,ou=groups,dc=acme,dc=org
-    cn: developers
+  20-groups.ldif: |
+    dn: cn=developer,ou=groups,dc=acme,dc=org
+    cn: developer
     objectclass: groupOfNames
     member: uid=user-01,ou=people,dc=acme,dc=org
 
-    dn: cn=admins,ou=groups,dc=acme,dc=org
-    cn: admins
+    dn: cn=admin,ou=groups,dc=acme,dc=org
+    cn: admin
     objectclass: groupOfNames
     member: uid=user-02,ou=people,dc=acme,dc=org
-  ldif30.ldif: |
+  30-clients.ldif: |
     dn: uid=client-01,ou=clients,dc=acme,dc=org
     objectClass: inetOrgPerson
     objectClass: organizationalPerson
@@ -270,7 +270,7 @@ data:
     mail: client-14@acme.org
     userPassword: client-14
     uid: client-14
-  ldif40.ldif: |
+  40-roles.ldif: |
     dn: cn=role-00,ou=roles,dc=acme,dc=org
     cn: normalusers
     objectclass: groupOfNames
@@ -280,7 +280,7 @@ data:
     member: uid=client-04,ou=clients,dc=acme,dc=org
 
     dn: cn=role-10,ou=roles,dc=acme,dc=org
-    cn: admins
+    cn: admin
     objectclass: groupOfNames
     member: uid=client-11,ou=clients,dc=acme,dc=org
     member: uid=client-12,ou=clients,dc=acme,dc=org
