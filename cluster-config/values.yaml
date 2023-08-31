@@ -18,6 +18,7 @@ gitops:
 openldap:
   namespace: openldap
   name: server
+  sa_name: openldap
 
 rhdg:
   operator:
