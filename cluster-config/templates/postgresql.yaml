@@ -36,7 +36,7 @@ metadata:
 stringData:
   database-name: datagrid
   database-password: password
-  database-user: datagriduser
+  database-user: rhdguser
 ---
 apiVersion: v1
 kind: Service
