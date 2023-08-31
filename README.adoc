@@ -47,6 +47,42 @@ Deploying the cluster is pretty simple:
 
 
 
+== Side services
+
+
+This automation deploys two side services that help participants explore common configuration needs like accessing a Database for in-line caching and persistence; and also an LDAP server, to validate the credentials of users against an external source of users. Therefore, the Helm Chart present in this repository deploys:
+
+* An OpenLDAP server in the `ldap` namespace.
+* A PostgreSQL database in the `user1-db` namespace.
+
+
+=== PostgreSQL
+
+
+* In is based on the RHEL 9 - PostgreSQL database image certified and provided by Red Hat: https://catalog.redhat.com/software/containers/rhel9/postgresql-15/63f763f779eb1214c4d6fcf6?container-tabs=overview
+* The deployment method is an adjustment of the official templates distributed by Red Hat on Openshift clusters. The original templates related to PostgreSQL were exported to the folder `openshift-templates` for further documentation.
+* The full documentation of the container image is located in the RH Software Collections organization at Github: https://github.com/sclorg/postgresql-container/tree/master
+
+
+*How to check that PostgreSQL works fine?*
+
+
+.Deploy the solution in the cluster
+[source, bash]
+----
+oc apply -f solutions/solution-datasource.yaml
+----
+
+
+=== OpenLDAP
+
+
+
+
+
+
+
+
 
 
 
