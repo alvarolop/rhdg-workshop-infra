@@ -15,6 +15,10 @@ gitops:
   namespace: gitops
   cluster: argocd
 
+openldap:
+  namespace: openldap
+  name: server
+
 rhdg:
   operator:
     namespace: rhdg-operator

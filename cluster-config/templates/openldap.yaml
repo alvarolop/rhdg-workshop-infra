@@ -1,19 +1,30 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/description: "This project contains the shared OpenLDAP deployment"
+    openshift.io/display-name: "OpenLDAP"
+  labels:
+    argocd.argoproj.io/managed-by: gitops
+  name: {{ $.Values.openldap.namespace }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openldap
+  name: {{ $.Values.openldap.name }}
+  namespace: {{ $.Values.openldap.namespace }}
   labels:
-    app.kubernetes.io/name: openldap
+    app.kubernetes.io/name: {{ $.Values.openldap.name }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: openldap
+      app.kubernetes.io/name: {{ $.Values.openldap.name }}
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: openldap
+        app.kubernetes.io/name: {{ $.Values.openldap.name }}
     spec:
       serviceAccountName: openldap
       containers:
@@ -27,17 +38,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: adminpassword
-                  name: openldap
-            # - name: LDAP_USERS
-            #   valueFrom:
-            #     secretKeyRef:
-            #       key: users
-            #       name: openldap
-            # - name: LDAP_PASSWORDS
-            #   valueFrom:
-            #     secretKeyRef:
-            #       key: passwords
-            #       name: openldap
+                  name: {{ $.Values.openldap.name }}-credentials
             - name: LDAP_CUSTOM_LDIF_DIR
               value: /tmp/ldif
           ports:
@@ -48,6 +49,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: openldap
+  namespace: {{ $.Values.openldap.namespace }}
   labels:
     app.kubernetes.io/name: openldap
 spec:
@@ -62,23 +64,24 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: openldap
+  name: {{ $.Values.openldap.name }}-credentials
+  namespace: {{ $.Values.openldap.namespace }}
 type: Opaque
 stringData:
   adminpassword: adminpassword
-  users: user01,user02
-  passwords: password01,password02
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: openldap
+  namespace: {{ $.Values.openldap.namespace }}
 ---
 # Role for openldap-sa
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: allow-anyuid-scc
+  namespace: {{ $.Values.openldap.namespace }}
 rules:
   - verbs:
       - use
@@ -94,6 +97,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: anyuid-scc
+  namespace: {{ $.Values.openldap.namespace }}
 subjects:
   - kind: ServiceAccount
     name: openldap-sa
@@ -108,7 +112,8 @@ roleRef:
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: openldap-config
+  name: {{ $.Values.openldap.name }}-config
+  namespace: {{ $.Values.openldap.namespace }}
 data:
   ldif00.ldif: |
     dn: dc=acme,dc=org
