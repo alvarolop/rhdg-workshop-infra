@@ -33,27 +33,38 @@ spec:
           imagePullPolicy: "Always"
           env:
             - name: LDAP_ADMIN_USERNAME
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  key: LDAP_ADMIN_USERNAME
+                  name: {{ $.Values.openldap.name }}-credentials
             - name: LDAP_ROOT
               value: "dc=acme,dc=org"
             - name: LDAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: adminpassword
+                  key: LDAP_ADMIN_PASSWORD
                   name: {{ $.Values.openldap.name }}-credentials
             - name: LDAP_CUSTOM_LDIF_DIR
-              value: /tmp/ldif
+              value: /tmp/ldifs
           ports:
             - name: tcp-ldap
               containerPort: 1389
+          volumeMounts:
+            - name: ldifs-volume
+              mountPath: /tmp/ldifs
+      volumes:
+        - name: ldifs-volume
+          configMap:
+            name: {{ $.Values.openldap.name }}-configuration
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: openldap
+  name: {{ $.Values.openldap.name }}
   namespace: {{ $.Values.openldap.namespace }}
   labels:
-    app.kubernetes.io/name: openldap
+    app.kubernetes.io/name: {{ $.Values.openldap.name }}
 spec:
   type: ClusterIP
   ports:
@@ -61,7 +72,7 @@ spec:
       port: 1389
       targetPort: tcp-ldap
   selector:
-    app.kubernetes.io/name: openldap
+    app.kubernetes.io/name: {{ $.Values.openldap.name }}
 ---
 apiVersion: v1
 kind: Secret
@@ -70,7 +81,8 @@ metadata:
   namespace: {{ $.Values.openldap.namespace }}
 type: Opaque
 stringData:
-  adminpassword: adminpassword
+  LDAP_ADMIN_USERNAME: admin
+  LDAP_ADMIN_PASSWORD: adminpassword
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -114,7 +126,7 @@ roleRef:
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ $.Values.openldap.name }}-config
+  name: {{ $.Values.openldap.name }}-configuration
   namespace: {{ $.Values.openldap.namespace }}
 data:
   00-organization.ldif: |
