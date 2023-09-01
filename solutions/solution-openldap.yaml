@@ -18,7 +18,10 @@ spec:
   expose:
     annotations: {}
     type: Route
-  replicas: 2
+  # logging:
+  #   categories:
+  #     org.infinispan.SERVER: debug
+  replicas: 1
   security:
     endpointAuthentication: true
     endpointSecretName: cluster-credentials
@@ -57,6 +60,61 @@ metadata:
 data:
   infinispan-config.yaml: >
     infinispan:
+      server:
+        security:
+          securityRealms:
+            - name: default
+              cacheLifespan: 0
+              cacheMaxSize: 0
+              serverIdentities:
+                ssl:
+                  keystore:
+                    path: "/etc/security/conf/operator-security/keystore.pem"
+                    keystorePassword: ""
+              ldapRealm:
+                url: 'ldap://server.openldap.svc:1389'
+                principal: 'cn=admin,dc=acme,dc=org'
+                credential: adminpassword
+                connectionTimeout: '3000'
+                readTimeout: '30000'
+                connectionPooling: true
+                referralMode: ignore
+                pageSize: '30'
+                directVerification: true
+                identityMapping:
+                  rdnIdentifier: uid
+                  searchDn: 'dc=acme,dc=org'
+                  searchRecursive: true
+                  attributeMapping:
+                    - filter: '(&(objectClass=groupOfNames)(member={1}))'
+                      filterDn: 'ou=roles,dc=acme,dc=org'
+                      from: cn
+                      to: Roles
+                    - filter: '(&(objectClass=groupOfNames)(member={1}))'
+                      filterDn: 'ou=groups,dc=acme,dc=org'
+                      from: cn
+                      to: Roles
+                  userPasswordMapper:
+                    from: "userPassword"
+        endpoints:
+          endpoint:
+            socketBinding: default
+            securityRealm: default
+            hotrodConnector:
+              authentication:
+                securityRealm: default
+                sasl:
+                  serverName: infinispan
+                  mechanisms:
+                    - PLAIN
+                  qop:
+                    - auth
+            restConnector:
+              authentication:
+                securityRealm: default
+                mechanisms:
+                  - DIGEST
+                  - BASIC
       cache-container:
         name: "default"
         statistics: "true"
