@@ -18,7 +18,7 @@ spec:
   expose:
     annotations: {}
     type: Route
-  replicas: 2
+  replicas: 1
   security:
     endpointAuthentication: true
     endpointSecretName: cluster-credentials
