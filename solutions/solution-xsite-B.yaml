@@ -10,7 +10,6 @@ metadata:
     domain: bookshop
     user: user1
 spec:
-  configMapName: cluster-custom-config
   container:
     cpu: "2000m:100m"
     extraJvmOpts: '-Duser.timezone="Europe/Madrid"'
@@ -18,7 +17,7 @@ spec:
   expose:
     annotations: {}
     type: Route
-  replicas: 2
+  replicas: 1
   security:
     endpointAuthentication: true
     endpointSecretName: cluster-credentials
@@ -30,6 +29,16 @@ spec:
     container:
       ephemeralStorage: true 
     type: DataGrid 
+    sites:
+      local:
+        expose:
+          type: ClusterIP
+        maxRelayNodes: 1
+        name: SiteB
+      locations:
+        - name: SiteA
+          clusterName: cluster 
+          namespace: user1-rhdg
 ---
 apiVersion: v1
 kind: Secret
@@ -50,82 +59,6 @@ stringData:
       roles:
         - application
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cluster-custom-config
-data:
-  infinispan-config.yaml: >
-    infinispan:
-      cache-container:
-        name: "default"
-        statistics: "true"
-        replicatedCacheConfiguration:
-          name: "proto-repl-small-template"
-          mode: "SYNC"
-          statistics: "true"
-          encoding:
-            key:
-              mediaType: application/x-protostream
-            value:
-              mediaType: application/x-protostream
-          expiration:
-            lifespan: "5000"
-            maxIdle: "1000"
-          memory:
-            maxCount: "10"
-            whenFull: "REMOVE"
-        replicatedCacheConfiguration:
-          name: "proto-repl-big-template"
-          mode: "SYNC"
-          statistics: "true"
-          encoding:
-            key:
-              mediaType: application/x-protostream
-            value:
-              mediaType: application/x-protostream
-          expiration:
-            lifespan: "5000"
-            maxIdle: "1000"
-          memory:
-            maxCount: "1000"
-            whenFull: "REMOVE"
----
-apiVersion: infinispan.org/v2alpha1
-kind: Cache
-metadata:
-  name: cluster-cache-replicated-01
-spec:
-  clusterName: cluster
-  name:  cache-replicated-01
-  template: |-
-    replicatedCache:
-      mode: "SYNC"
-      statistics: "true"
-      encoding:
-        key:
-          mediaType: application/x-protostream
-        value:
-          mediaType: application/x-protostream
-      expiration:
-        lifespan: "60000"
-      memory:
-        maxSize: "200MB"
-        whenFull: "REMOVE"
-  updates:
-    strategy: recreate
----
-apiVersion: infinispan.org/v2alpha1
-kind: Cache
-metadata:
-  name: cluster-cache-replicated-02
-spec:
-  clusterName: cluster
-  name:  cache-replicated-02
-  templateName: proto-repl-small-template
-  updates:
-    strategy: recreate
----
 apiVersion: infinispan.org/v2alpha1
 kind: Cache
 metadata:
@@ -143,6 +76,11 @@ spec:
           mediaType: application/x-protostream
         value:
           mediaType: application/x-protostream
+      backups: 
+        SiteA: 
+          backup: 
+            strategy: "SYNC"
+            twoPhaseCommit: "false"
   updates:
     strategy: recreate
 ---
