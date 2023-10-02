@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-users: 2
+users: 15
 
 ocp_users: 20
 
