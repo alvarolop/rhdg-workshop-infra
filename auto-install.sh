@@ -35,7 +35,7 @@ oc process -f gitops/00-operator.yaml| oc apply -f -
 
 
 echo -n "Waiting for pods ready..."
-while [[ $(oc get pods -l control-plane=controller-manager -n openshift-operators -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo -n "." && sleep 1; done; echo -n -e "  [OK]\n"
+while [[ $(oc get pods -l control-plane=gitops-operator -n openshift-operators -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo -n "." && sleep 1; done; echo -n -e "  [OK]\n"
 
 # Deploy the ArgoCD cluster
 echo -e "\n[2/3]Deploying the RHDG cluster"
